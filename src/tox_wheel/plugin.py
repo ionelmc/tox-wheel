@@ -50,7 +50,7 @@ def make_wheel(report, config, session, venv):
 
         def is_allowed_external(path):
             if not original_is_allowed_external(path):
-                raise RuntimeError("Failed to build platform specific wheel")
+                raise RuntimeError("Couldn't find interpreter inside {} for building".format(venv))
             return True
 
         try:
@@ -67,12 +67,6 @@ def make_wheel(report, config, session, venv):
             )
         finally:
             venv.is_allowed_external = original_is_allowed_external
-        # build_log = action.popen(
-        #     [venv.getcommandpath("python"), setup, "bdist_wheel", "--dist-dir", config.distdir],
-        #     cwd=config.setupdir,
-        #     returnout=True,
-        # )
-        # report.verbosity2(build_log)
         try:
             return config.distdir.listdir()[0]
         except py.error.ENOENT:
