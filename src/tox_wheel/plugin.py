@@ -1,5 +1,5 @@
 import logging
-import sys
+from functools import partial
 
 import pluggy
 import py
@@ -20,7 +20,7 @@ def tox_addoption(parser):
 def tox_package(session, venv):
     if session.config.option.wheel:
         original = package.build_package
-        package.build_package = build_package
+        package.build_package = partial(build_package, venv=venv)
         try:
             yield
         finally:
@@ -29,13 +29,13 @@ def tox_package(session, venv):
         yield
 
 
-def build_package(config, report, session):
+def build_package(config, report, session, venv):
     if config.isolated_build:
         report.warning("Disabling isolated_build, not supported with wheels (for now).")
-    return make_wheel(report, config, session)
+    return make_wheel(report, config, session, venv)
 
 
-def make_wheel(report, config, session):
+def make_wheel(report, config, session, venv):
     setup = config.setupdir.join("setup.py")
     if not setup.check():
         report.error("No setup.py file found. The expected location is: {}".format(setup))
@@ -45,12 +45,34 @@ def make_wheel(report, config, session):
         if config.option.wheel_clean_build:
             session.make_emptydir(config.setupdir.join("build"))
         session.make_emptydir(config.distdir)
-        build_log = action.popen(
-            [sys.executable, setup, "bdist_wheel", "--dist-dir", config.distdir],
-            cwd=config.setupdir,
-            returnout=True,
-        )
-        report.verbosity2(build_log)
+
+        original_is_allowed_external = venv.is_allowed_external
+
+        def is_allowed_external(path):
+            if not original_is_allowed_external(path):
+                raise RuntimeError("Failed to build platform specific wheel")
+            return True
+
+        try:
+            venv.is_allowed_external = is_allowed_external
+            venv.status = 0
+            venv.update(action=action)
+            venv.test(
+                name="wheel-make",
+                commands=[["python", setup, "bdist_wheel", "--dist-dir", config.distdir]],
+                redirect=False,
+                ignore_outcome=False,
+                ignore_errors=False,
+                display_hash_seed=False,
+            )
+        finally:
+            venv.is_allowed_external = original_is_allowed_external
+        # build_log = action.popen(
+        #     [venv.getcommandpath("python"), setup, "bdist_wheel", "--dist-dir", config.distdir],
+        #     cwd=config.setupdir,
+        #     returnout=True,
+        # )
+        # report.verbosity2(build_log)
         try:
             return config.distdir.listdir()[0]
         except py.error.ENOENT:
