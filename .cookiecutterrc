@@ -1,0 +1,54 @@
+# This file exists so you can easily regenerate your project.
+#
+# `cookiepatcher` is a convenient shim around `cookiecutter`
+# for regenerating projects (it will generate a .cookiecutterrc
+# automatically for any template). To use it:
+#
+#    pip install cookiepatcher
+#    cookiepatcher gh:ionelmc/cookiecutter-pylibrary project-path
+#
+# See:
+#    https://pypi.org/project/cookiepatcher
+#
+# Alternatively, you can run:
+#
+#    cookiecutter --overwrite-if-exists --config-file=project-path/.cookiecutterrc gh:ionelmc/cookiecutter-pylibrary
+
+default_context:
+
+    _template:                 'cookiecutter-pylibrary'
+    appveyor:                  'yes'
+    c_extension_function:      '-'
+    c_extension_module:        '-'
+    c_extension_optional:      'no'
+    c_extension_support:       'no'
+    codacy:                    'no'
+    codeclimate:               'no'
+    codecov:                   'no'
+    command_line_interface:    'no'
+    command_line_interface_bin_name: '-'
+    coveralls:                 'no'
+    distribution_name:         'tox-wheel'
+    email:                     'contact@ionelmc.ro'
+    full_name:                 'Ionel Cristian Mărieș'
+    github_username:           'ionelmc'
+    landscape:                 'no'
+    license:                   'BSD 2-Clause License'
+    linter:                    'flake8'
+    package_name:              'tox_wheel'
+    project_name:              'tox-wheel'
+    project_short_description: 'A Tox plugin that builds and installs wheels instead of sdist.'
+    release_date:              'today'
+    repo_name:                 'tox-wheel'
+    requiresio:                'yes'
+    scrutinizer:               'no'
+    sphinx_docs:               'no'
+    sphinx_doctest:            'no'
+    sphinx_theme:              'sphinx-rtd-theme'
+    test_matrix_configurator:  'no'
+    test_matrix_separate_coverage: 'no'
+    test_runner:               'pytest'
+    travis:                    'yes'
+    version:                   '0.1.0'
+    website:                   'https://blog.ionelmc.ro'
+    year:                      'now'
