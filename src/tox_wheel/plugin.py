@@ -1,4 +1,3 @@
-import logging
 from functools import partial
 
 import pluggy
@@ -7,18 +6,27 @@ from tox import package
 
 hookimpl = pluggy.HookimplMarker("tox")
 
-logger = logging.getLogger('tox_wheel')
-
 
 @hookimpl
 def tox_addoption(parser):
-    parser.add_argument('--wheel-clean-build', action='store_true', help='Clean build dirs before building the wheel')
-    parser.add_argument('--wheel', action='store_true', help='Use bdist_wheel instead of sdist')
+    parser.add_argument("--wheel", action="store_true", help="Use bdist_wheel instead of sdist")
+    parser.add_testenv_attribute(
+        name="wheel",
+        type="bool",
+        default=False,
+        help="Use bdist_wheel instead of sdist",
+    )
+    parser.add_testenv_attribute(
+        name="wheel_clean_build",
+        type="bool",
+        default=True,
+        help="Clean build dirs before building the wheel",
+    )
 
 
 @hookimpl(hookwrapper=True)
 def tox_package(session, venv):
-    if session.config.option.wheel:
+    if session.config.option.wheel or venv.envconfig.wheel:
         original = package.build_package
         package.build_package = partial(build_package, venv=venv)
         try:
@@ -31,7 +39,7 @@ def tox_package(session, venv):
 
 def build_package(config, report, session, venv):
     if config.isolated_build:
-        report.warning("Disabling isolated_build, not supported with wheels (for now).")
+        report.warning("Disabling isolated_build, not supported with wheels.")
     return make_wheel(report, config, session, venv)
 
 
@@ -42,7 +50,8 @@ def make_wheel(report, config, session, venv):
         raise SystemExit(1)
     with session.newaction(None, "packaging") as action:
         action.setactivity("wheel-make", setup)
-        if config.option.wheel_clean_build:
+        if venv.envconfig.wheel_clean_build:
+            action.setactivity("wheel-make", "cleaning up build directory ...")
             session.make_emptydir(config.setupdir.join("build"))
         session.make_emptydir(config.distdir)
 

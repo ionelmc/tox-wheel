@@ -68,13 +68,21 @@ Documentation
 =============
 
 
-To use the project:
+Two way to use:
 
-.. code-block:: python
+* Run ``tox --wheel``
+* Have this in your ``tox.ini``:
 
-    import tox_wheel
-    tox_wheel.-()
+  .. code-block:: ini
 
+    [testenv]
+    wheel = true
+
+  You can also disable ``build`` directory removal (dirty builds, use at your own peril):
+
+  .. code-block:: ini
+
+    wheel_clean_build = false
 
 Development
 ===========
