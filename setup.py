@@ -66,8 +66,13 @@ setup(
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
+    project_urls={
+        'Changelog': 'https://github.com/ionelmc/tox-wheel/blob/master/CHANGELOG.rst',
+        'Issue Tracker': 'https://github.com/ionelmc/tox-wheel/issues',
+    },
     install_requires=[
         'tox>=3.6',
+        'wheel>=0.31',
     ],
     extras_require={
         # eg:
