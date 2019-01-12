@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.2.0 (2019-01-11)
+0.2.0 (2019-01-12)
 ------------------
 
 * Remove ``--wheel-clean-build`` CLI option. Build directory cleaning is now on by default.
