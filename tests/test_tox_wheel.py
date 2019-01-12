@@ -60,4 +60,3 @@ wheel = true
     ])
     assert 'is not a supported wheel on this platform.' not in result.stdout.str()
     assert 'is not a supported wheel on this platform.' not in result.stderr.str()
-
