@@ -34,9 +34,23 @@ def test_enabled_toxini_noclean(testdir):
     testdir.tmpdir.join('tox.ini').write("""
 [testenv]
 wheel = true
-wheel_clean_build = false
+wheel_dirty = true
 """)
     result = testdir.run('tox', '-e', 'py27')
+    result.stdout.fnmatch_lines([
+        'GLOB wheel-make: *',
+    ])
+    assert 'cleaning up build directory ...' not in result.stdout.str()
+    assert 'cleaning up build directory ...' not in result.stderr.str()
+    assert result.ret == 0
+
+
+def test_enabled_cli_noclean(testdir):
+    testdir.tmpdir.join('tox.ini').write("""
+[testenv]
+wheel = true
+""")
+    result = testdir.run('tox', '-e', 'py27', '--wheel-dirty')
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
     ])
