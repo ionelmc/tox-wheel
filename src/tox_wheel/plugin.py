@@ -3,13 +3,23 @@ from functools import partial
 import pluggy
 import py
 from tox import package
+from tox.package import get_package
 
 hookimpl = pluggy.HookimplMarker("tox")
 
 
 @hookimpl
 def tox_addoption(parser):
-    parser.add_argument("--wheel", action="store_true", help="Use bdist_wheel instead of sdist")
+    parser.add_argument(
+        "--wheel",
+        action="store_true",
+        help="Use bdist_wheel instead of sdist",
+    )
+    parser.add_argument(
+        "--wheel-dirty",
+        action="store_true",
+        help="Do not remove build directory (fast but dirty builds)",
+    )
     parser.add_testenv_attribute(
         name="wheel",
         type="bool",
@@ -17,24 +27,28 @@ def tox_addoption(parser):
         help="Use bdist_wheel instead of sdist",
     )
     parser.add_testenv_attribute(
-        name="wheel_clean_build",
+        name="wheel_dirty",
         type="bool",
-        default=True,
-        help="Clean build dirs before building the wheel",
+        default=False,
+        help="Do not remove build directory (fast but dirty builds)"
     )
 
 
-@hookimpl(hookwrapper=True)
+@hookimpl
 def tox_package(session, venv):
     if session.config.option.wheel or venv.envconfig.wheel:
         original = package.build_package
         package.build_package = partial(build_package, venv=venv)
         try:
-            yield
+            if not hasattr(venv, "package"):
+                venv.package, venv.dist = get_package(session)
+            return venv.package
         finally:
             package.build_package = original
     else:
-        yield
+        if not hasattr(session, "package"):
+            session.package, session.dist = get_package(session)
+        return session.package
 
 
 def build_package(config, report, session, venv):
@@ -50,7 +64,7 @@ def make_wheel(report, config, session, venv):
         raise SystemExit(1)
     with session.newaction(None, "packaging") as action:
         action.setactivity("wheel-make", setup)
-        if venv.envconfig.wheel_clean_build:
+        if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
             action.setactivity("wheel-make", "cleaning up build directory ...")
             session.make_emptydir(config.setupdir.join("build"))
         session.make_emptydir(config.distdir)
@@ -62,10 +76,14 @@ def make_wheel(report, config, session, venv):
                 raise RuntimeError("Couldn't find interpreter inside {} for building".format(venv))
             return True
 
+        def venv_update(action):
+            action.setactivity("update", "already updated!")
+
         try:
             venv.is_allowed_external = is_allowed_external
             venv.status = 0
             venv.update(action=action)
+            venv.update = venv_update
             venv.test(
                 name="wheel-make",
                 commands=[["python", setup, "bdist_wheel", "--dist-dir", config.distdir]],
