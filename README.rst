@@ -53,7 +53,7 @@ Overview
 
 .. end-badges
 
-A Tox plugin that builds and installs wheels instead of sdist.
+A [tox](http://tox.readthedocs.org) plugin that builds and installs wheels instead of sdist.
 
 * Free software: BSD 2-Clause License
 
