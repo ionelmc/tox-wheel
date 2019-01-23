@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from functools import partial
 
 import pluggy
@@ -32,19 +33,34 @@ def tox_addoption(parser):
         default=False,
         help="Do not remove build directory (fast but dirty builds)"
     )
+    parser.add_testenv_attribute(
+        name="wheel_build_env",
+        type="string",
+        default='{envname}',
+        help="Environment to use for building the wheel. Default: %(default)r"
+    )
+
+
+@contextmanager
+def patch(obj, attr, value):
+    original = getattr(obj, attr)
+    setattr(obj, attr, value)
+    try:
+        yield
+    finally:
+        getattr(obj, attr, original)
 
 
 @hookimpl
 def tox_package(session, venv):
     if session.config.option.wheel or venv.envconfig.wheel:
-        original = package.build_package
-        package.build_package = partial(build_package, venv=venv)
-        try:
-            if not hasattr(venv, "package"):
-                venv.package, venv.dist = get_package(session)
-            return venv.package
-        finally:
-            package.build_package = original
+        def installpkg(_path, action, self=venv, original=venv.installpkg):
+            with patch(package, 'build_package',
+                       partial(build_package, venv=session.getvenv(self.envconfig.wheel_build_env))):
+                path, _ = get_package(session)
+                original(path, action)
+
+        venv.installpkg = installpkg
     else:
         if not hasattr(session, "package"):
             session.package, session.dist = get_package(session)
@@ -81,9 +97,9 @@ def make_wheel(report, config, session, venv):
 
         try:
             venv.is_allowed_external = is_allowed_external
-            venv.status = 0
+            # venv.status = 0
             venv.update(action=action)
-            venv.update = venv_update
+            # venv.update = venv_update
             venv.test(
                 name="wheel-make",
                 commands=[["python", setup, "bdist_wheel", "--dist-dir", config.distdir]],

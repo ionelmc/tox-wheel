@@ -15,28 +15,52 @@ setup(name='foobar')
     return testdir
 
 
-def test_disabled(testdir):
-    result = testdir.run('tox', '-e', 'py27')
+@pytest.fixture(params=['', '--parallel 2 --parallel-live'])
+def options(request):
+    return request.param.split()
+
+
+def test_disabled(testdir, options):
+    result = testdir.run('tox', '-e', 'py27', *options)
     result.stdout.fnmatch_lines([
         'GLOB sdist-make: *',
     ])
 
 
-def test_enabled(testdir):
-    result = testdir.run('tox', '-e', 'py27', '--wheel')
+def test_enabled(testdir, options):
+    result = testdir.run('tox', '-e', 'py27', '--wheel', *options)
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
     ])
     assert result.ret == 0
 
 
-def test_enabled_toxini_noclean(testdir):
+def test_build_env(testdir, options):
+    testdir.tmpdir.join('setup.cfg').write("""
+[bdist_wheel]
+universal = 1
+""")
+    testdir.tmpdir.join('tox.ini').write("""
+[testenv]
+wheel = true
+wheel_build_env = build
+
+[testenv:build]
+""")
+    result = testdir.run('tox', '-e', 'py27', *options)
+    result.stdout.fnmatch_lines([
+        'GLOB wheel-make: *',
+    ])
+    assert result.ret == 0
+
+
+def test_enabled_toxini_noclean(testdir, options):
     testdir.tmpdir.join('tox.ini').write("""
 [testenv]
 wheel = true
 wheel_dirty = true
 """)
-    result = testdir.run('tox', '-e', 'py27')
+    result = testdir.run('tox', '-e', 'py27', *options)
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
     ])
@@ -45,12 +69,12 @@ wheel_dirty = true
     assert result.ret == 0
 
 
-def test_enabled_cli_noclean(testdir):
+def test_enabled_cli_noclean(testdir, options):
     testdir.tmpdir.join('tox.ini').write("""
 [testenv]
 wheel = true
 """)
-    result = testdir.run('tox', '-e', 'py27', '--wheel-dirty')
+    result = testdir.run('tox', '-e', 'py27', '--wheel-dirty', *options)
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
     ])
@@ -59,12 +83,12 @@ wheel = true
     assert result.ret == 0
 
 
-def test_enabled_toxini(testdir):
+def test_enabled_toxini(testdir, options):
     testdir.tmpdir.join('tox.ini').write("""
 [testenv]
 wheel = true
 """)
-    result = testdir.run('tox', '-vv', '-e', 'py27')
+    result = testdir.run('tox', '-vv', '-e', 'py27', *options)
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
         'GLOB wheel-make: cleaning up build directory ...',
