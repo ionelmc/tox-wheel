@@ -51,29 +51,53 @@ def patch(obj, attr, value):
         getattr(obj, attr, original)
 
 
+class LazyPath(py.path.local):
+    def __init__(self, factory):
+        self.factory = factory
+        self.value = None
+
+    def __fspath__(self):
+        if self.value is None:
+            self.value = self.factory()
+        return str(self.value)
+
+    __str__ = __fspath__
+
+    strpath = property(__str__)
+
+
 @hookimpl
 def tox_package(session, venv):
-    if session.config.option.wheel or venv.envconfig.wheel:
-        def installpkg(_path, action, self=venv, original=venv.installpkg):
-            with patch(package, 'build_package',
-                       partial(build_package, venv=session.getvenv(self.envconfig.wheel_build_env))):
-                path, _ = get_package(session)
-                original(path, action)
-
-        venv.installpkg = installpkg
-    else:
-        if not hasattr(session, "package"):
-            session.package, session.dist = get_package(session)
+    if hasattr(session, "package"):
         return session.package
+    if session.config.option.wheel or venv.envconfig.wheel:
+        build_venv = session.getvenv(venv.envconfig.wheel_build_env)
+        if hasattr(build_venv, "package"):
+            return build_venv.package
+
+        def wheel_get_package(_):
+            assert _ is session
+            with patch(package, 'build_package', partial(wheel_build_package, venv=build_venv)):
+                path, _ = get_package(session)
+                return path
+
+        path = build_venv.package = LazyPath(partial(wheel_get_package, session))
+
+        def wheel_installpkg(_path, action, installpkg=venv.installpkg):
+            installpkg(str(path), action)
+
+        venv.installpkg = wheel_installpkg
+
+        return path
 
 
-def build_package(config, report, session, venv):
+def wheel_build_package(config, report, session, venv):
     if config.isolated_build:
         report.warning("Disabling isolated_build, not supported with wheels.")
-    return make_wheel(report, config, session, venv)
+    return wheel_build(report, config, session, venv)
 
 
-def make_wheel(report, config, session, venv):
+def wheel_build(report, config, session, venv):
     setup = config.setupdir.join("setup.py")
     if not setup.check():
         report.error("No setup.py file found. The expected location is: {}".format(setup))
@@ -85,18 +109,15 @@ def make_wheel(report, config, session, venv):
             session.make_emptydir(config.setupdir.join("build"))
         session.make_emptydir(config.distdir)
 
-        original_is_allowed_external = venv.is_allowed_external
-
-        def is_allowed_external(path):
-            if not original_is_allowed_external(path):
+        def wheel_is_allowed_external(path, is_allowed_external=venv.is_allowed_external):
+            if not is_allowed_external(path):
                 raise RuntimeError("Couldn't find interpreter inside {} for building".format(venv))
             return True
 
-        def venv_update(action):
-            action.setactivity("update", "already updated!")
+        # def venv_update(action):
+        #     action.setactivity("update", "already updated!")
 
-        try:
-            venv.is_allowed_external = is_allowed_external
+        with patch(venv, 'is_allowed_external', wheel_is_allowed_external):
             # venv.status = 0
             venv.update(action=action)
             # venv.update = venv_update
@@ -108,8 +129,6 @@ def make_wheel(report, config, session, venv):
                 ignore_errors=False,
                 display_hash_seed=False,
             )
-        finally:
-            venv.is_allowed_external = original_is_allowed_external
         try:
             return config.distdir.listdir()[0]
         except py.error.ENOENT:

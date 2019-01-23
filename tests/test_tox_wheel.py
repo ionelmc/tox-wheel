@@ -15,23 +15,24 @@ setup(name='foobar')
     return testdir
 
 
-@pytest.fixture(params=['', '--parallel 2 --parallel-live'])
+@pytest.fixture(params=['', '--parallel 1 --parallel-live'], ids=['sequential', 'parallel'])
 def options(request):
     return request.param.split()
 
 
 def test_disabled(testdir, options):
-    result = testdir.run('tox', '-e', 'py27', *options)
+    result = testdir.run('tox', '-e', 'py27,py36', *options)
     result.stdout.fnmatch_lines([
         'GLOB sdist-make: *',
     ])
 
 
 def test_enabled(testdir, options):
-    result = testdir.run('tox', '-e', 'py27', '--wheel', *options)
+    result = testdir.run('tox', '-e', 'py27,py36', '--wheel', *options)
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
     ])
+    assert result.stdout.str().count('running bdist_wheel') == 2
     assert result.ret == 0
 
 
@@ -47,10 +48,11 @@ wheel_build_env = build
 
 [testenv:build]
 """)
-    result = testdir.run('tox', '-e', 'py27', *options)
+    result = testdir.run('tox', '-e', 'py27,py36', *options)
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
     ])
+    assert result.stdout.str().count('running bdist_wheel') == 1
     assert result.ret == 0
 
 
@@ -60,7 +62,7 @@ def test_enabled_toxini_noclean(testdir, options):
 wheel = true
 wheel_dirty = true
 """)
-    result = testdir.run('tox', '-e', 'py27', *options)
+    result = testdir.run('tox', '-e', 'py27,py36', *options)
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
     ])
@@ -74,7 +76,7 @@ def test_enabled_cli_noclean(testdir, options):
 [testenv]
 wheel = true
 """)
-    result = testdir.run('tox', '-e', 'py27', '--wheel-dirty', *options)
+    result = testdir.run('tox', '-e', 'py27,py36', '--wheel-dirty', *options)
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
     ])
@@ -88,7 +90,7 @@ def test_enabled_toxini(testdir, options):
 [testenv]
 wheel = true
 """)
-    result = testdir.run('tox', '-vv', '-e', 'py27', *options)
+    result = testdir.run('tox', '-vv', '-e', 'py27,py36', *options)
     result.stdout.fnmatch_lines([
         'GLOB wheel-make: *',
         'GLOB wheel-make: cleaning up build directory ...',
