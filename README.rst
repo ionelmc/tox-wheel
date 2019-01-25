@@ -57,6 +57,19 @@ A `tox <http://tox.readthedocs.org>`_ plugin that builds and installs wheels ins
 
 * Free software: BSD 2-Clause License
 
+What does this plugin actually do? What it doesn't?
+
+* It builds wheels for all the active environments.
+  Unfortunately it's done in a batch before any testing starts (in order to support ``tox --parallel`` mode).
+
+  However, you can configure it so it builds only once, if your project can build universal wheels.
+* Universal wheels are not detected.
+* No support for ``pyproject.toml`` yet.
+
+What projects use this?
+
+* `hunter <https://pypi.org/project/hunter/>`_ (also publishes the wheels built by this plugin)
+
 Installation
 ============
 
@@ -67,8 +80,7 @@ Installation
 Documentation
 =============
 
-
-Two way to use:
+Two ways to use:
 
 * Run ``tox --wheel``
 * Have this in your ``tox.ini``:
@@ -78,11 +90,36 @@ Two way to use:
     [testenv]
     wheel = true
 
-  You can also disable ``build`` directory removal (dirty builds, use at your own peril):
+Additional settings:
+
+* You can also disable ``build`` directory removal (dirty builds, use at your own peril):
 
   .. code-block:: ini
 
+    [testenv]
     wheel_clean_build = false
+
+* By default the build environment is the same environment that the wheel gets installed to. You can change it, eg:
+
+  .. code-block:: ini
+
+    [tox]
+    envlist = py27{,-build}
+
+    [testenv]
+    wheel_build_env = {envname}-build
+    deps =
+        build: cython
+
+  Or, if you have universal wheels you can have a single build env:
+
+  .. code-block:: ini
+
+    [testenv]
+    wheel_build_env = build
+
+    [testenv:build]
+    deps = setuptools_scm
 
 Development
 ===========
