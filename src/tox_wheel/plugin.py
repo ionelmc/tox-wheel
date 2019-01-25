@@ -83,11 +83,6 @@ def tox_package(session, venv):
 
         path = build_venv.package = LazyPath(partial(wheel_get_package, session))
 
-        def wheel_installpkg(_path, action, installpkg=venv.installpkg):
-            installpkg(str(path), action)
-
-        venv.installpkg = wheel_installpkg
-
         return path
 
 
