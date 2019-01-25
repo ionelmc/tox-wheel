@@ -72,8 +72,8 @@ def tox_package(session, venv):
         return session.package
     if session.config.option.wheel or venv.envconfig.wheel:
         build_venv = session.getvenv(venv.envconfig.wheel_build_env)
-        if hasattr(build_venv, "package"):
-            return build_venv.package
+        if hasattr(build_venv, "wheel_package"):
+            return build_venv.wheel_package
 
         def wheel_get_package(_):
             assert _ is session
@@ -81,7 +81,7 @@ def tox_package(session, venv):
                 path, _ = get_package(session)
                 return path
 
-        path = build_venv.package = LazyPath(partial(wheel_get_package, session))
+        path = build_venv.wheel_package = LazyPath(partial(wheel_get_package, session))
 
         return path
 
