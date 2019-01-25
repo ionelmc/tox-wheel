@@ -114,13 +114,8 @@ def wheel_build(report, config, session, venv):
                 raise RuntimeError("Couldn't find interpreter inside {} for building".format(venv))
             return True
 
-        # def venv_update(action):
-        #     action.setactivity("update", "already updated!")
-
         with patch(venv, 'is_allowed_external', wheel_is_allowed_external):
-            # venv.status = 0
             venv.update(action=action)
-            # venv.update = venv_update
             venv.test(
                 name="wheel-make",
                 commands=[["python", setup, "bdist_wheel", "--dist-dir", config.distdir]],
