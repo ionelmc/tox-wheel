@@ -102,7 +102,7 @@ def wheel_build(report, config, session, venv):
     if not setup.check():
         report.error("No setup.py file found. The expected location is: {}".format(setup))
         raise SystemExit(1)
-    with session.newaction(None, "packaging") as action:
+    with session.newaction(venv, "packaging") as action:
         action.setactivity("wheel-make", setup)
         if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
             action.setactivity("wheel-make", "cleaning up build directory ...")

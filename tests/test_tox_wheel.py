@@ -33,7 +33,7 @@ def test_disabled(testdir, options):
 def test_enabled(testdir, options):
     result = testdir.run('tox', '--wheel', *options)
     result.stdout.fnmatch_lines([
-        'GLOB wheel-make: *',
+        'py* wheel-make: *',
     ])
     assert result.stdout.str().count('running bdist_wheel') == 2
     assert result.ret == 0
@@ -53,7 +53,7 @@ wheel_build_env = build
 """, mode='a')
     result = testdir.run('tox', *options)
     result.stdout.fnmatch_lines([
-        'GLOB wheel-make: *',
+        'build wheel-make: *',
     ])
     assert result.stdout.str().count('running bdist_wheel') == 1
     assert result.ret == 0
@@ -67,7 +67,7 @@ wheel_dirty = true
 """, mode='a')
     result = testdir.run('tox', *options)
     result.stdout.fnmatch_lines([
-        'GLOB wheel-make: *',
+        'py* wheel-make: *',
     ])
     assert 'cleaning up build directory ...' not in result.stdout.str()
     assert 'cleaning up build directory ...' not in result.stderr.str()
@@ -81,7 +81,7 @@ wheel = true
 """, mode='a')
     result = testdir.run('tox', '--wheel-dirty', *options)
     result.stdout.fnmatch_lines([
-        'GLOB wheel-make: *',
+        'py* wheel-make: *',
     ])
     assert 'cleaning up build directory ...' not in result.stdout.str()
     assert 'cleaning up build directory ...' not in result.stderr.str()
@@ -95,10 +95,10 @@ wheel = true
 """, mode='a')
     result = testdir.run('tox', '-vv', *options)
     result.stdout.fnmatch_lines([
-        'GLOB wheel-make: *',
-        'GLOB wheel-make: cleaning up build directory ...',
+        'py* wheel-make: *',
+        'py* wheel-make: cleaning up build directory ...',
         '  removing *[\\/]build',
-        'GLOB finish: packaging *',
+        'py* finish: packaging *',
         'copying new sdistfile to *.whl*',
     ])
     assert 'is not a supported wheel on this platform.' not in result.stdout.str()
