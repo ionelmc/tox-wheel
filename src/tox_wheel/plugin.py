@@ -51,39 +51,16 @@ def patch(obj, attr, value):
         getattr(obj, attr, original)
 
 
-class LazyPath(py.path.local):
-    def __init__(self, factory):
-        self.factory = factory
-        self.value = None
-
-    def __fspath__(self):
-        if self.value is None:
-            self.value = self.factory()
-        return str(self.value)
-
-    __str__ = __fspath__
-
-    strpath = property(__str__)
-
-
 @hookimpl
 def tox_package(session, venv):
     if hasattr(session, "package"):
         return session.package
     if session.config.option.wheel or venv.envconfig.wheel:
         build_venv = session.getvenv(venv.envconfig.wheel_build_env)
-        if hasattr(build_venv, "wheel_package"):
-            return build_venv.wheel_package
-
-        def wheel_get_package(_):
-            assert _ is session
+        if not hasattr(build_venv, "wheel_package"):
             with patch(package, 'build_package', partial(wheel_build_package, venv=build_venv)):
-                path, _ = get_package(session)
-                return path
-
-        path = build_venv.wheel_package = LazyPath(partial(wheel_get_package, session))
-
-        return path
+                build_venv.wheel_package, build_venv.wheel_dist = get_package(session)
+        return build_venv.wheel_package
 
 
 def wheel_build_package(config, report, session, venv):
