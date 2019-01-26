@@ -2,6 +2,14 @@
 Changelog
 =========
 
+0.3.0 (2019-01-26)
+------------------
+
+* Added support for ``tox --parallel`` mode.
+* Added ``wheel_build_env`` config option.
+* Renamed ``wheel_clean_build`` config option to ``wheel_dirty``.
+* Added ``--wheel-dirty`` CLI argument.
+
 0.2.1 (2019-01-12)
 ------------------
 
