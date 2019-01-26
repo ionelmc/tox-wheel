@@ -34,9 +34,9 @@ Overview
     :alt: PyPI Package latest release
     :target: https://pypi.org/project/tox-wheel
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/tox-wheel/v0.2.1.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/tox-wheel/v0.3.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/ionelmc/tox-wheel/compare/v0.2.1...master
+    :target: https://github.com/ionelmc/tox-wheel/compare/v0.3.0...master
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/tox-wheel.svg
     :alt: PyPI Wheel
