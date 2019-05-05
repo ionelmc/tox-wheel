@@ -4,7 +4,9 @@ from functools import partial
 import pluggy
 import py
 from tox import package
+from tox import reporter
 from tox.package import get_package
+from tox.util.path import ensure_empty_dir
 
 hookimpl = pluggy.HookimplMarker("tox")
 
@@ -63,23 +65,23 @@ def tox_package(session, venv):
         return build_venv.wheel_package
 
 
-def wheel_build_package(config, report, session, venv):
+def wheel_build_package(config, session, venv):
     if config.isolated_build:
-        report.warning("Disabling isolated_build, not supported with wheels.")
-    return wheel_build(report, config, session, venv)
+        reporter.warning("Disabling isolated_build, not supported with wheels.")
+    return wheel_build(config, session, venv)
 
 
-def wheel_build(report, config, session, venv):
+def wheel_build(config, session, venv):
     setup = config.setupdir.join("setup.py")
     if not setup.check():
-        report.error("No setup.py file found. The expected location is: {}".format(setup))
+        reporter.error("No setup.py file found. The expected location is: {}".format(setup))
         raise SystemExit(1)
-    with session.newaction(venv, "packaging") as action:
+    with session.newaction(venv.name, "packaging") as action:
         action.setactivity("wheel-make", setup)
         if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
             action.setactivity("wheel-make", "cleaning up build directory ...")
-            session.make_emptydir(config.setupdir.join("build"))
-        session.make_emptydir(config.distdir)
+            ensure_empty_dir(config.setupdir.join("build"))
+        ensure_empty_dir(config.distdir)
 
         def wheel_is_allowed_external(path, is_allowed_external=venv.is_allowed_external):
             if not is_allowed_external(path):
@@ -107,9 +109,9 @@ def wheel_build(report, config, session, venv):
                         continue
                     data.append(line)
             if not "".join(data).strip():
-                report.error("setup.py is empty")
+                reporter.error("setup.py is empty")
                 raise SystemExit(1)
-            report.error(
+            reporter.error(
                 "No dist directory found. Please check setup.py, e.g with:\n"
                 "     python setup.py sdist"
             )

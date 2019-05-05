@@ -71,8 +71,8 @@ setup(
         'Issue Tracker': 'https://github.com/ionelmc/tox-wheel/issues',
     },
     install_requires=[
-        'tox>=3.6',
-        'wheel>=0.31',
+        'tox>=3.9.0',
+        'wheel>=0.33.1',
     ],
     extras_require={
         # eg:

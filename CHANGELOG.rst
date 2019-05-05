@@ -2,6 +2,11 @@
 Changelog
 =========
 
+0.4.0 (2019-05-05)
+------------------
+
+* Fixed compatibility with tox and changed requirement for minimum tox version to 3.9.0.
+
 0.3.0 (2019-01-26)
 ------------------
 
