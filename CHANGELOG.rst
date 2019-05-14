@@ -2,6 +2,11 @@
 Changelog
 =========
 
+0.4.1 (2019-05-14)
+------------------
+
+* Improved error handling when no dists are built.
+
 0.4.0 (2019-05-05)
 ------------------
 

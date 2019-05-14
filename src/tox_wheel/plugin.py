@@ -99,7 +99,7 @@ def wheel_build(config, session, venv):
                 display_hash_seed=False,
             )
         try:
-            return config.distdir.listdir()[0]
+            dists = config.distdir.listdir()
         except py.error.ENOENT:
             # check if empty or comment only
             data = []
@@ -113,6 +113,14 @@ def wheel_build(config, session, venv):
                 raise SystemExit(1)
             reporter.error(
                 "No dist directory found. Please check setup.py, e.g with:\n"
-                "     python setup.py sdist"
+                "     python setup.py bdist_wheel"
             )
             raise SystemExit(1)
+        else:
+            if not dists:
+                reporter.error(
+                    "No distributions found in the dist directory found. Please check setup.py, e.g with:\n"
+                    "     python setup.py bdist_wheel"
+                )
+                raise SystemExit(1)
+            return dists[0]
