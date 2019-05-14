@@ -58,6 +58,22 @@ wheel_build_env = build
     assert result.stdout.str().count('running bdist_wheel') == 1
     assert result.ret == 0
 
+@pytest.mark.parametrize('wheel_build_env', ['', 'wheel_build_env'])
+def test_skip_usedevelop(testdir, options, wheel_build_env):
+    testdir.tmpdir.join('tox.ini').write("""
+[testenv]
+usedevelop = true
+""" + ("""
+wheel_build_env = build
+
+[testenv:build]
+""" if wheel_build_env else ""), mode='a')
+    result = testdir.run('tox', '-v', '--wheel', *options)
+    stdout = result.stdout.str()
+    assert stdout.count('wheel-make') == 0
+    assert stdout.count('bdist_wheel') == 0
+    assert result.ret == 0
+
 
 def test_enabled_toxini_noclean(testdir, options):
     testdir.tmpdir.join('tox.ini').write("""
