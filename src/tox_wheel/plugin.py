@@ -77,12 +77,6 @@ def wheel_build(config, session, venv):
         reporter.error("No setup.py file found. The expected location is: {}".format(setup))
         raise SystemExit(1)
     with session.newaction(venv.name, "packaging") as action:
-        action.setactivity("wheel-make", setup)
-        if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
-            action.setactivity("wheel-make", "cleaning up build directory ...")
-            ensure_empty_dir(config.setupdir.join("build"))
-        ensure_empty_dir(config.distdir)
-
         def wheel_is_allowed_external(path, is_allowed_external=venv.is_allowed_external):
             if not is_allowed_external(path):
                 raise RuntimeError("Couldn't find interpreter inside {} for building".format(venv))
@@ -90,6 +84,10 @@ def wheel_build(config, session, venv):
 
         with patch(venv, 'is_allowed_external', wheel_is_allowed_external):
             venv.update(action=action)
+            if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
+                action.setactivity("wheel-make", "cleaning up build directory ...")
+                ensure_empty_dir(config.setupdir.join("build"))
+            ensure_empty_dir(config.distdir)
             venv.test(
                 name="wheel-make",
                 commands=[["python", setup, "bdist_wheel", "--dist-dir", config.distdir]],

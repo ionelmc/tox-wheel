@@ -2,6 +2,12 @@
 Changelog
 =========
 
+0.4.2 (2019-05-15)
+------------------
+
+* Improved logging a bit so messages are less confusing (don't emit ``wheel-make path/to/setup.py``).
+* Moved dist/build cleanup right before ``bdist_wheel``.
+
 0.4.1 (2019-05-15)
 ------------------
 
