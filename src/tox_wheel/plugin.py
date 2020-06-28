@@ -152,7 +152,7 @@ def wheel_build_pep517(config, session, venv):
             ensure_empty_dir(config.distdir)
             venv.test(
                 name="wheel-make",
-                commands=[["pip", "wheel", ".", "--no-deps", "-use-pep517", "--wheel-dir", config.distdir]],
+                commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", config.distdir]],
                 redirect=False,
                 ignore_outcome=False,
                 ignore_errors=False,

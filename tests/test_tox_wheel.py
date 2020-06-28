@@ -4,10 +4,10 @@ pytest_plugins = 'pytester',
 
 
 @pytest.fixture
-def testdir(testdir):
+def testdir_legacy(testdir):
     testdir.tmpdir.join('tox.ini').write("""
 [tox]
-envlist = py27-{a,b}
+envlist = py-{a,b}
 """)
     testdir.tmpdir.join('setup.py').write("""
 from setuptools import setup
@@ -18,20 +18,46 @@ setup(name='foobar')
     return testdir
 
 
+@pytest.fixture
+def testdir_pep517(testdir):
+    testdir.tmpdir.join('tox.ini').write("""
+[tox]
+envlist = py-{a,b}
+
+[testenv]
+wheel = true
+wheel_pep_517 = true
+""")
+    testdir.tmpdir.join('setup.py').write("""
+from setuptools import setup
+
+setup(name='foobar')
+""")
+    testdir.tmpdir.join('pyproject.toml').write("""
+[build-system]
+requires = [
+    "setuptools >= 35.0.2"
+]
+build-backend = "setuptools.build_meta"
+""")
+    testdir.tmpdir.join('build').ensure(dir=1)
+    return testdir
+
+
 @pytest.fixture(params=['', '--parallel 1 --parallel-live'], ids=['sequential', 'parallel'])
 def options(request):
-    return ['-e', 'py27-a,py27-b'] + request.param.split()
+    return ['-e', 'py-a,py-b'] + request.param.split()
 
 
-def test_disabled(testdir, options):
-    result = testdir.run('tox', *options)
+def test_disabled(testdir_legacy, options):
+    result = testdir_legacy.run('tox', *options)
     result.stdout.fnmatch_lines([
         'GLOB sdist-make: *',
     ])
 
 
-def test_enabled(testdir, options):
-    result = testdir.run('tox', '--wheel', *options)
+def test_enabled_legacy(testdir_legacy, options):
+    result = testdir_legacy.run('tox', '--wheel', *options)
     result.stdout.fnmatch_lines([
         'py* wheel-make: *',
     ])
@@ -39,19 +65,28 @@ def test_enabled(testdir, options):
     assert result.ret == 0
 
 
-def test_build_env(testdir, options):
-    testdir.tmpdir.join('setup.cfg').write("""
+def test_enabled_pep517(testdir_pep517, options):
+    result = testdir_pep517.run('tox', *options)
+    result.stdout.fnmatch_lines([
+        'py* wheel-make: *',
+    ])
+    assert result.stdout.str().count('Building wheel for foobar (PEP 517)') == 4
+    assert result.ret == 0
+
+
+def test_build_env_legacy(testdir_legacy, options):
+    testdir_legacy.tmpdir.join('setup.cfg').write("""
 [bdist_wheel]
 universal = 1
 """)
-    testdir.tmpdir.join('tox.ini').write("""
+    testdir_legacy.tmpdir.join('tox.ini').write("""
 [testenv]
 wheel = true
 wheel_build_env = build
 
 [testenv:build]
 """, mode='a')
-    result = testdir.run('tox', *options)
+    result = testdir_legacy.run('tox', *options)
     result.stdout.fnmatch_lines([
         'build wheel-make: *',
     ])
@@ -59,9 +94,27 @@ wheel_build_env = build
     assert result.ret == 0
 
 
+def test_build_env_pep517(testdir_pep517, options):
+    testdir_pep517.tmpdir.join('setup.cfg').write("""
+[bdist_wheel]
+universal = 1
+""")
+    testdir_pep517.tmpdir.join('tox.ini').write("""
+wheel_build_env = build
+
+[testenv:build]
+""", mode='a')
+    result = testdir_pep517.run('tox', *options)
+    result.stdout.fnmatch_lines([
+        'build wheel-make: *',
+    ])
+    assert result.stdout.str().count('Building wheel for foobar (PEP 517)') == 2
+    assert result.ret == 0
+
+
 @pytest.mark.parametrize('wheel_build_env', ['', 'wheel_build_env'])
-def test_skip_usedevelop(testdir, options, wheel_build_env):
-    testdir.tmpdir.join('tox.ini').write("""
+def test_skip_usedevelop(testdir_legacy, options, wheel_build_env):
+    testdir_legacy.tmpdir.join('tox.ini').write("""
 [testenv]
 usedevelop = true
 """ + ("""
@@ -69,20 +122,20 @@ wheel_build_env = build
 
 [testenv:build]
 """ if wheel_build_env else ""), mode='a')
-    result = testdir.run('tox', '-v', '--wheel', *options)
+    result = testdir_legacy.run('tox', '-v', '--wheel', *options)
     stdout = result.stdout.str()
     assert stdout.count('wheel-make') == 0
     assert stdout.count('bdist_wheel') == 0
     assert result.ret == 0
 
 
-def test_enabled_toxini_noclean(testdir, options):
-    testdir.tmpdir.join('tox.ini').write("""
+def test_enabled_toxini_noclean(testdir_legacy, options):
+    testdir_legacy.tmpdir.join('tox.ini').write("""
 [testenv]
 wheel = true
 wheel_dirty = true
 """, mode='a')
-    result = testdir.run('tox', *options)
+    result = testdir_legacy.run('tox', *options)
     result.stdout.fnmatch_lines([
         'py* wheel-make: *',
     ])
@@ -91,12 +144,12 @@ wheel_dirty = true
     assert result.ret == 0
 
 
-def test_enabled_cli_noclean(testdir, options):
-    testdir.tmpdir.join('tox.ini').write("""
+def test_enabled_cli_noclean(testdir_legacy, options):
+    testdir_legacy.tmpdir.join('tox.ini').write("""
 [testenv]
 wheel = true
 """, mode='a')
-    result = testdir.run('tox', '--wheel-dirty', *options)
+    result = testdir_legacy.run('tox', '--wheel-dirty', *options)
     result.stdout.fnmatch_lines([
         'py* wheel-make: *',
     ])
@@ -105,12 +158,12 @@ wheel = true
     assert result.ret == 0
 
 
-def test_enabled_toxini(testdir, options):
-    testdir.tmpdir.join('tox.ini').write("""
+def test_enabled_toxini(testdir_legacy, options):
+    testdir_legacy.tmpdir.join('tox.ini').write("""
 [testenv]
 wheel = true
 """, mode='a')
-    result = testdir.run('tox', '-vv', *options)
+    result = testdir_legacy.run('tox', '-vv', *options)
     result.stdout.fnmatch_lines([
         'py* wheel-make: *',
         'py* wheel-make: cleaning up build directory ...',
