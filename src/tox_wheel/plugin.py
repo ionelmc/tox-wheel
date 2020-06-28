@@ -16,7 +16,7 @@ def tox_addoption(parser):
     parser.add_argument(
         "--wheel",
         action="store_true",
-        help="Use bdist_wheel instead of sdist",
+        help="Build wheel instead of sdist",
     )
     parser.add_argument(
         "--wheel-dirty",
@@ -27,7 +27,13 @@ def tox_addoption(parser):
         name="wheel",
         type="bool",
         default=False,
-        help="Use bdist_wheel instead of sdist",
+        help="Build wheel instead of sdist",
+    )
+    parser.add_testenv_attribute(
+        name="wheel_pep_517",
+        type="bool",
+        default=False,
+        help="Build wheel using PEP 517/518"
     )
     parser.add_testenv_attribute(
         name="wheel_dirty",
@@ -68,21 +74,29 @@ def tox_package(session, venv):
 def wheel_build_package(config, session, venv):
     if config.isolated_build:
         reporter.warning("Disabling isolated_build, not supported with wheels.")
-    return wheel_build(config, session, venv)
+    pep517 = venv.envconfig.wheel_pep_517
+    if pep517:
+        wheel_package = wheel_build_pep517(config, session, venv)
+    else:
+        wheel_package = wheel_build_legacy(config, session, venv)
+    return wheel_package
 
 
-def wheel_build(config, session, venv):
+def wheel_is_allowed_external(path, venv, is_allowed_external=None):
+    if is_allowed_external is None:
+        is_allowed_external = venv.is_allowed_external
+    if not is_allowed_external(path):
+        raise RuntimeError("Couldn't find interpreter inside {} for building".format(venv))
+    return True
+
+
+def wheel_build_legacy(config, session, venv):
     setup = config.setupdir.join("setup.py")
     if not setup.check():
         reporter.error("No setup.py file found. The expected location is: {}".format(setup))
         raise SystemExit(1)
     with session.newaction(venv.name, "packaging") as action:
-        def wheel_is_allowed_external(path, is_allowed_external=venv.is_allowed_external):
-            if not is_allowed_external(path):
-                raise RuntimeError("Couldn't find interpreter inside {} for building".format(venv))
-            return True
-
-        with patch(venv, 'is_allowed_external', wheel_is_allowed_external):
+        with patch(venv, 'is_allowed_external', partial(wheel_is_allowed_external, venv=venv)):
             venv.update(action=action)
             if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
                 action.setactivity("wheel-make", "cleaning up build directory ...")
@@ -119,6 +133,44 @@ def wheel_build(config, session, venv):
                 reporter.error(
                     "No distributions found in the dist directory found. Please check setup.py, e.g with:\n"
                     "     python setup.py bdist_wheel"
+                )
+                raise SystemExit(1)
+            return dists[0]
+
+
+def wheel_build_pep517(config, session, venv):
+    pyproject = config.setupdir.join("pyproject.toml")
+    if not pyproject.check():
+        reporter.error("No pyproject.toml file found. The expected location is: {}".format(pyproject))
+        raise SystemExit(1)
+    with session.newaction(venv.name, "packaging") as action:
+        with patch(venv, 'is_allowed_external', partial(wheel_is_allowed_external, venv=venv)):
+            venv.update(action=action)
+            if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
+                action.setactivity("wheel-make", "cleaning up build directory ...")
+                ensure_empty_dir(config.setupdir.join("build"))
+            ensure_empty_dir(config.distdir)
+            venv.test(
+                name="wheel-make",
+                commands=[["pip", "wheel", ".", "--no-deps", "-use-pep517", "--wheel-dir", config.distdir]],
+                redirect=False,
+                ignore_outcome=False,
+                ignore_errors=False,
+                display_hash_seed=False,
+            )
+        try:
+            dists = config.distdir.listdir()
+        except py.error.ENOENT:
+            reporter.error(
+                "No dist directory found. Please check pyproject.toml, e.g with:\n"
+                "     pip wheel . --use-pep517"
+            )
+            raise SystemExit(1)
+        else:
+            if not dists:
+                reporter.error(
+                    "No distributions found in the dist directory found. Please check pyproject.toml, e.g with:\n"
+                    "     pip wheel . --use-pep517"
                 )
                 raise SystemExit(1)
             return dists[0]
