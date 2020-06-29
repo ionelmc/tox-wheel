@@ -1,3 +1,5 @@
+import tox_wheel.plugin
+
 import pytest
 
 pytest_plugins = 'pytester',
@@ -47,6 +49,17 @@ build-backend = "setuptools.build_meta"
 @pytest.fixture(params=['', '--parallel 1 --parallel-live'], ids=['sequential', 'parallel'])
 def options(request):
     return ['-e', 'py-a,py-b'] + request.param.split()
+
+
+def test_patch():
+    class A(object):
+        def __init__(self, a):
+            self.a = a
+
+    obj = A(10)
+    with tox_wheel.plugin.patch(obj, 'a', 5):
+        assert obj.a == 5
+    assert obj.a == 10
 
 
 def test_disabled(testdir_legacy, options):
