@@ -56,7 +56,7 @@ def patch(obj, attr, value):
     try:
         yield
     finally:
-        getattr(obj, attr, original)
+        setattr(obj, attr, original)
 
 
 @hookimpl
