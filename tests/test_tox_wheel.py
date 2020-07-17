@@ -1,6 +1,6 @@
-import tox_wheel.plugin
-
 import pytest
+
+import tox_wheel.plugin
 
 pytest_plugins = 'pytester',
 
