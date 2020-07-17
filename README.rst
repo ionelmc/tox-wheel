@@ -7,8 +7,6 @@ Overview
 .. list-table::
     :stub-columns: 1
 
-    * - docs
-      - |docs|
     * - tests
       - | |travis| |appveyor| |requires|
         |
@@ -16,9 +14,7 @@ Overview
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
 
-
-
-.. |travis| image:: https://travis-ci.org/ionelmc/tox-wheel.svg?branch=master
+.. |travis| image:: https://api.travis-ci.org/ionelmc/tox-wheel.svg?branch=master
     :alt: Travis-CI Build Status
     :target: https://travis-ci.org/ionelmc/tox-wheel
 
@@ -34,10 +30,6 @@ Overview
     :alt: PyPI Package latest release
     :target: https://pypi.org/project/tox-wheel
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/tox-wheel/v0.4.2.svg
-    :alt: Commits since latest release
-    :target: https://github.com/ionelmc/tox-wheel/compare/v0.4.2...master
-
 .. |wheel| image:: https://img.shields.io/pypi/wheel/tox-wheel.svg
     :alt: PyPI Wheel
     :target: https://pypi.org/project/tox-wheel
@@ -50,6 +42,9 @@ Overview
     :alt: Supported implementations
     :target: https://pypi.org/project/tox-wheel
 
+.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/tox-wheel/v0.4.2.svg
+    :alt: Commits since latest release
+    :target: https://github.com/ionelmc/tox-wheel/compare/v0.4.2...master
 
 .. end-badges
 
@@ -66,9 +61,9 @@ What does this plugin actually do? What it doesn't?
 * Universal wheels are not detected.
 * No support for ``pyproject.toml`` yet.
 
-What projects use this?
+A Tox plugin that builds and installs wheels instead of sdist.
 
-* `hunter <https://pypi.org/project/hunter/>`_ (also publishes the wheels built by this plugin)
+* Free software: BSD 2-Clause License
 
 Installation
 ============
@@ -77,49 +72,22 @@ Installation
 
     pip install tox-wheel
 
+You can also install the in-development version with::
+
+    pip install https://github.com/ionelmc/tox-wheel/archive/master.zip
+
+
 Documentation
 =============
 
-Two ways to use:
 
-* Run ``tox --wheel``
-* Have this in your ``tox.ini``:
+To use the project:
 
-  .. code-block:: ini
+.. code-block:: python
 
-    [testenv]
-    wheel = true
+    import tox_wheel
+    tox_wheel.-()
 
-Additional settings:
-
-* You can also disable ``build`` directory removal (dirty builds, use at your own peril):
-
-  .. code-block:: ini
-
-    [testenv]
-    wheel_clean_build = false
-
-* By default the build environment is the same environment that the wheel gets installed to. You can change it, eg:
-
-  .. code-block:: ini
-
-    [tox]
-    envlist = py27{,-build}
-
-    [testenv]
-    wheel_build_env = {envname}-build
-    deps =
-        build: cython
-
-  Or, if you have universal wheels you can have a single build env:
-
-  .. code-block:: ini
-
-    [testenv]
-    wheel_build_env = build
-
-    [testenv:build]
-    deps = setuptools_scm
 
 Development
 ===========
