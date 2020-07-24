@@ -59,7 +59,6 @@ What does this plugin actually do? What it doesn't?
 
   However, you can configure it so it builds only once, if your project can build universal wheels.
 * Universal wheels are not detected.
-* No support for ``pyproject.toml`` yet.
 
 A Tox plugin that builds and installs wheels instead of sdist.
 
