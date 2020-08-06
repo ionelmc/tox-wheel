@@ -52,18 +52,6 @@ A `tox <http://tox.readthedocs.org>`_ plugin that builds and installs wheels ins
 
 * Free software: BSD 2-Clause License
 
-What does this plugin actually do? What it doesn't?
-
-* It builds wheels for all the active environments.
-  Unfortunately it's done in a batch before any testing starts (in order to support ``tox --parallel`` mode).
-
-  However, you can configure it so it builds only once, if your project can build universal wheels.
-* Universal wheels are not detected.
-
-A Tox plugin that builds and installs wheels instead of sdist.
-
-* Free software: BSD 2-Clause License
-
 Installation
 ============
 
@@ -79,14 +67,67 @@ You can also install the in-development version with::
 Documentation
 =============
 
+Enabling
+--------
 
-To use the project:
+To enable either use ``tox --wheel`` or change your ``tox.ini`` if you always want the plugin to be enabled:
 
-.. code-block:: python
+.. code-block:: ini
 
-    import tox_wheel
-    tox_wheel.-()
+    [testenv]
+    wheel = true
 
+You can also use factors in ``tox.ini``:
+
+.. code-block:: ini
+
+    [tox]
+    envlist = {py27,py35,py36,py37,py38,pypy,pypy3}-{cover,nocov}
+
+    [testenv]
+    wheel =
+        cover: false
+        nocov: true
+
+
+Build configuration
+-------------------
+
+This plugin will build wheels for all the active environments. Note that building will be done in a batch before any testing starts
+(in order to support ``tox --parallel`` mode).
+
+If you can produce universal wheels you might want to configure the build env so that the wheel is only built once for all the envs:
+
+.. code-block:: ini
+
+    [testenv]
+    wheel_build_env = build
+
+    [testenv:build]
+
+The plugin cleans the build dir by default, in case you want to speed things further (at the risk of build caching problems)
+you could use ``tox --wheel-dirty``.
+
+You can also place this configuration in ``tox.ini`` but there will be a unpleasant surprise factor if you
+ever hit the aforementioned build problems:
+
+.. code-block:: ini
+
+    [testenv]
+    wheel_dirty = true
+
+PEP517 support
+--------------
+
+If you have a custom ``[build-system] build-backend`` in your ``pyproject.toml`` you need to enable the PEP517 builder by
+having this in your ``tox.ini``:
+
+.. code-block:: ini
+
+    [testenv]
+    wheel_pep517 = true
+
+Enabling this will delegate building to ``pip wheel --use-pep517``.
 
 Development
 ===========
@@ -95,19 +136,3 @@ To run the all tests run::
 
     tox
 
-Note, to combine the coverage data from all the tox environments run:
-
-.. list-table::
-    :widths: 10 90
-    :stub-columns: 1
-
-    - - Windows
-      - ::
-
-            set PYTEST_ADDOPTS=--cov-append
-            tox
-
-    - - Other
-      - ::
-
-            PYTEST_ADDOPTS=--cov-append tox

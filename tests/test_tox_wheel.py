@@ -28,7 +28,7 @@ envlist = py-{a,b}
 
 [testenv]
 wheel = true
-wheel_pep_517 = true
+wheel_pep517 = true
 """)
     testdir.tmpdir.join('setup.py').write("""
 from setuptools import setup

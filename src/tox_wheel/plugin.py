@@ -30,7 +30,7 @@ def tox_addoption(parser):
         help="Build wheel instead of sdist",
     )
     parser.add_testenv_attribute(
-        name="wheel_pep_517",
+        name="wheel_pep517",
         type="bool",
         default=False,
         help="Build wheel using PEP 517/518"
@@ -44,7 +44,7 @@ def tox_addoption(parser):
     parser.add_testenv_attribute(
         name="wheel_build_env",
         type="string",
-        default='{envname}',
+        default="{envname}",
         help="Environment to use for building the wheel. Default: %(default)r"
     )
 
@@ -66,7 +66,7 @@ def tox_package(session, venv):
     if session.config.option.wheel or venv.envconfig.wheel:
         build_venv = session.getvenv(venv.envconfig.wheel_build_env)
         if not hasattr(build_venv, "wheel_package"):
-            with patch(package, 'build_package', partial(wheel_build_package, venv=build_venv)):
+            with patch(package, "build_package", partial(wheel_build_package, venv=build_venv)):
                 build_venv.wheel_package, build_venv.wheel_dist = get_package(session)
         return build_venv.wheel_package
 
@@ -74,7 +74,7 @@ def tox_package(session, venv):
 def wheel_build_package(config, session, venv):
     if config.isolated_build:
         reporter.warning("Disabling isolated_build, not supported with wheels.")
-    pep517 = venv.envconfig.wheel_pep_517
+    pep517 = venv.envconfig.wheel_pep517
     if pep517:
         wheel_package = wheel_build_pep517(config, session, venv)
     else:
@@ -96,7 +96,7 @@ def wheel_build_legacy(config, session, venv):
         reporter.error("No setup.py file found. The expected location is: {}".format(setup))
         raise SystemExit(1)
     with session.newaction(venv.name, "packaging") as action:
-        with patch(venv, 'is_allowed_external', partial(wheel_is_allowed_external, venv=venv)):
+        with patch(venv, "is_allowed_external", partial(wheel_is_allowed_external, venv=venv)):
             venv.update(action=action)
             if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
                 action.setactivity("wheel-make", "cleaning up build directory ...")
@@ -144,7 +144,7 @@ def wheel_build_pep517(config, session, venv):
         reporter.error("No pyproject.toml file found. The expected location is: {}".format(pyproject))
         raise SystemExit(1)
     with session.newaction(venv.name, "packaging") as action:
-        with patch(venv, 'is_allowed_external', partial(wheel_is_allowed_external, venv=venv)):
+        with patch(venv, "is_allowed_external", partial(wheel_is_allowed_external, venv=venv)):
             venv.update(action=action)
             if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
                 action.setactivity("wheel-make", "cleaning up build directory ...")
