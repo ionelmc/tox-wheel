@@ -42,9 +42,9 @@ Overview
     :alt: Supported implementations
     :target: https://pypi.org/project/tox-wheel
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/tox-wheel/v0.4.2.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/tox-wheel/v0.5.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/ionelmc/tox-wheel/compare/v0.4.2...master
+    :target: https://github.com/ionelmc/tox-wheel/compare/v0.5.0...master
 
 .. end-badges
 
