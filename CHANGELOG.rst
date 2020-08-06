@@ -2,10 +2,11 @@
 Changelog
 =========
 
-0.X.Y (2020-07-24)
+0.5.0 (2020-08-06)
 ------------------
 
 * Added support for PEP 517/518.
+  Contributed by Antonio Botelho in `#5 <https://github.com/ionelmc/tox-wheel/pull/5>`_.
 
 0.4.2 (2019-05-15)
 ------------------
