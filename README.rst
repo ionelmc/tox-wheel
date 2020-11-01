@@ -104,6 +104,19 @@ If you can produce universal wheels you might want to configure the build env so
     wheel_build_env = build
 
     [testenv:build]
+    
+Note that you can also use ``wheel_build_env`` for situation where you have many environments for the same interpreter:
+
+    [testenv:py38]
+    ; regular testing
+
+    [testenv:py38-extras]
+    ; tests with optional dependencies
+    wheel_build_env = py38
+
+    [testenv:docs]
+    ; docs building
+    wheel_build_env = py38
 
 The plugin cleans the build dir by default, in case you want to speed things further (at the risk of build caching problems)
 you could use ``tox --wheel-dirty``.
