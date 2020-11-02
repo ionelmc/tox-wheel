@@ -104,8 +104,10 @@ If you can produce universal wheels you might want to configure the build env so
     wheel_build_env = build
 
     [testenv:build]
-    
+
 Note that you can also use ``wheel_build_env`` for situation where you have many environments for the same interpreter:
+
+.. code-block:: ini
 
     [testenv:py38]
     ; regular testing
