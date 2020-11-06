@@ -2,6 +2,15 @@
 Changelog
 =========
 
+0.6.0 (2020-11-06)
+------------------
+
+* Fixed unnecessary build directory cleanup and removed dead code.
+  Contributed by Thomas Grainger in `#9 <https://github.com/ionelmc/tox-wheel/pull/9>`_.
+* The ``isolated_build`` tox option is now an alias for ``wheel_pep517``.
+  Contributed by Thomas Grainger in `#6 <https://github.com/ionelmc/tox-wheel/pull/6>`_.
+* Added more configuration examples.
+
 0.5.0 (2020-08-06)
 ------------------
 
