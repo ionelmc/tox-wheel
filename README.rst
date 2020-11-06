@@ -9,7 +9,7 @@ Overview
 
     * - tests
       - | |travis| |appveyor| |requires|
-        |
+        | |coveralls| |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
@@ -25,6 +25,14 @@ Overview
 .. |requires| image:: https://requires.io/github/ionelmc/tox-wheel/requirements.svg?branch=master
     :alt: Requirements Status
     :target: https://requires.io/github/ionelmc/tox-wheel/requirements/?branch=master
+
+.. |coveralls| image:: https://coveralls.io/repos/ionelmc/tox-wheel/badge.svg?branch=master&service=github
+    :alt: Coverage Status
+    :target: https://coveralls.io/r/ionelmc/tox-wheel
+
+.. |codecov| image:: https://codecov.io/gh/ionelmc/tox-wheel/branch/master/graphs/badge.svg?branch=master
+    :alt: Coverage Status
+    :target: https://codecov.io/github/ionelmc/tox-wheel
 
 .. |version| image:: https://img.shields.io/pypi/v/tox-wheel.svg
     :alt: PyPI Package latest release
