@@ -25,7 +25,7 @@ def read(*names, **kwargs):
 
 setup(
     name='tox-wheel',
-    version='0.5.0',
+    version='0.6.0',
     license='BSD-2-Clause',
     description='A Tox plugin that builds and installs wheels instead of sdist.',
     long_description='%s\n%s' % (
