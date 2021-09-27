@@ -5,6 +5,7 @@ import pluggy
 import py
 from tox import package
 from tox import reporter
+from tox.exception import InterpreterNotFound
 from tox.package import get_package
 from tox.util.path import ensure_empty_dir
 
@@ -61,14 +62,20 @@ def patch(obj, attr, value):
 
 @hookimpl
 def tox_package(session, venv):
-    if hasattr(session, "package"):
-        return session.package
     if session.config.option.wheel or venv.envconfig.wheel:
         build_venv = session.getvenv(venv.envconfig.wheel_build_env)
         if not hasattr(build_venv, "wheel_package"):
-            with patch(package, "build_package", partial(wheel_build_package, venv=build_venv)):
-                build_venv.wheel_package, build_venv.wheel_dist = get_package(session)
+            try:
+                with patch(package, "build_package", partial(wheel_build_package, venv=build_venv)):
+                    build_venv.wheel_package, build_venv.wheel_dist = get_package(session)
+            except InterpreterNotFound:
+                if session.config.option.skip_missing_interpreters:
+                    return None
+                raise
         return build_venv.wheel_package
+
+    elif hasattr(session, "package"):
+        return session.package
 
 
 def wheel_build_package(config, session, venv):
