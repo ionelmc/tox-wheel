@@ -209,3 +209,60 @@ wheel = true
     ])
     assert 'is not a supported wheel on this platform.' not in result.stdout.str()
     assert 'is not a supported wheel on this platform.' not in result.stderr.str()
+
+
+@pytest.fixture(params=[True, False], ids=['skips', 'no-skips'])
+def skip_missing(request):
+    return request.param
+
+
+def test_skip_missing_interpreters(testdir_legacy, options, skip_missing):
+    testdir_legacy.tmpdir.join('tox.ini').write("""
+[tox]
+envlist =
+    py-{{a,b}}
+    py32
+
+skip_missing_interpreters = {}
+
+[testenv]
+wheel = true
+
+[testenv:py32]
+basepython = python3.nothing
+""".format(str(skip_missing).lower()))
+    options[1] = "py-a,py-b,py32"
+
+    result = testdir_legacy.run('tox', '-vv', *options)
+    result.stdout.fnmatch_lines([
+        'py* wheel-make: *',
+        'py* wheel-make: cleaning up build directory ...',
+        '  removing *[\\/]build',
+        'py* finish: packaging *',
+        'copying new sdistfile to *.whl*'])
+    if skip_missing:
+        assert result.ret == 0, result.stdout
+    else:
+        assert result.ret != 0, result.stdout
+
+def test_multiplex_sdist_and_wheel(testdir_legacy, options):
+    testdir_legacy.tmpdir.join('tox.ini').write("""
+[tox]
+envlist =
+    py-a-{{sdist, wheel}}
+
+[testenv]
+wheel =
+    wheel: true
+    sdist: false
+""".format(str(skip_missing).lower()))
+    options[1] = 'py-a-sdist,py-a-wheel'
+
+    result = testdir_legacy.run('tox', '-vv', *options)
+    result.stdout.fnmatch_lines([
+        '*python setup.py sdist*',
+        '*Building wheels for collected packages: foobar*',
+    ])
+
+
+
