@@ -5,9 +5,9 @@ import pluggy
 import py
 from tox import package
 from tox import reporter
+from tox.exception import InterpreterNotFound
 from tox.package import get_package
 from tox.util.path import ensure_empty_dir
-from tox.exception import InterpreterNotFound
 
 hookimpl = pluggy.HookimplMarker("tox")
 
