@@ -245,6 +245,7 @@ basepython = python3.nothing
     else:
         assert result.ret != 0, result.stdout
 
+
 def test_multiplex_sdist_and_wheel(testdir_legacy, options):
     testdir_legacy.tmpdir.join('tox.ini').write("""
 [tox]
@@ -255,7 +256,7 @@ envlist =
 wheel =
     wheel: true
     sdist: false
-""".format(str(skip_missing).lower()))
+""")
     options[1] = 'py-a-sdist,py-a-wheel'
 
     result = testdir_legacy.run('tox', '-vv', *options)
@@ -263,6 +264,3 @@ wheel =
         '*python setup.py sdist*',
         '*Building wheels for collected packages: foobar*',
     ])
-
-
-
