@@ -208,7 +208,7 @@ wheel = true
 [testenv:py32]
 basepython = python3.nothing
 """.format(str(skip_missing).lower()))
-    options[1] = "py-a,py-b,py32"
+    options[options.index('-e') + 1] = 'py-a,py-b,py32'
 
     result = testdir_legacy.run('tox', '-vv', *options)
     result.stdout.fnmatch_lines([
@@ -227,18 +227,19 @@ def test_multiplex_sdist_and_wheel(testdir_legacy, options):
     testdir_legacy.tmpdir.join('tox.ini').write("""
 [tox]
 envlist =
-    py-a-{{sdst, whl}}
+    py-a-{sdist, whl}
 
-[testenv:sdst]
+[testenv:sdist]
 wheel = false
 
 [testenv:whl]
 wheel = true
 """)
-    options[1] = 'py-a-sdst,py-a-whl'
+    options[options.index('-e') + 1] = 'py-a-sdist,py-a-whl'
 
     result = testdir_legacy.run('tox', '-vv', *options)
     result.stdout.fnmatch_lines([
-        '*setup.py sdist*',
-        '*Building wheels for collected packages: foobar*',
+        'GLOB sdist-make: *',
+        '*Building wheels*',
     ])
+    assert result.ret == 0, result.stdout.str()
