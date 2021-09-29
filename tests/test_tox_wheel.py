@@ -221,17 +221,17 @@ def test_skip_missing_interpreters(testdir_legacy, options, skip_missing):
 [tox]
 envlist =
     py-{{a,b}}
-    py32
+    missing_interpreter
 
 skip_missing_interpreters = {}
 
 [testenv]
 wheel = true
 
-[testenv:py32]
+[testenv:missing_interpreter]
 basepython = python3.nothing
 """.format(str(skip_missing).lower()))
-    options[options.index('-e') + 1] = 'py-a,py-b,py32'
+    options[options.index('-e') + 1] = 'py-a,py-b,missing_interpreter'
 
     result = testdir_legacy.run('tox', '-vv', *options)
     if skip_missing:
