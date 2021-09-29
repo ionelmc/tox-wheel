@@ -211,12 +211,6 @@ basepython = python3.nothing
     options[options.index('-e') + 1] = 'py-a,py-b,py32'
 
     result = testdir_legacy.run('tox', '-vv', *options)
-    result.stdout.fnmatch_lines([
-        'py* wheel-make: *',
-        'py* wheel-make: cleaning up build directory ...',
-        '  removing *[\\/]build',
-        'py* finish: packaging *',
-        'copying new sdistfile to *.whl*'])
     if skip_missing:
         assert result.ret == 0, result.stdout
     else:
