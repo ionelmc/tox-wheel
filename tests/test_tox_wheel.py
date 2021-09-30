@@ -215,7 +215,7 @@ def test_skip_missing_interpreters(testdir_legacy, options):
     testdir_legacy.tmpdir.join('tox.ini').write("""
 [tox]
 envlist =
-    py-{{a,b}}
+    py-{a,b}
     missing_interpreter
 
 skip_missing_interpreters = True
@@ -225,14 +225,11 @@ wheel = true
 
 [testenv:missing_interpreter]
 basepython = python3.nothing
-""".format(str(skip_missing).lower()))
+""")
     options[options.index('-e') + 1] = 'py-a,py-b,missing_interpreter'
 
     result = testdir_legacy.run('tox', '-vv', *options)
-    if skip_missing:
-        assert result.ret == 0, result.stdout
-    else:
-        assert result.ret != 0, result.stdout
+    assert result.ret == 0, result.stdout
 
 
 def test_multiplex_sdist_and_wheel(testdir_legacy, options):
