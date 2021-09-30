@@ -211,19 +211,14 @@ wheel = true
     assert 'is not a supported wheel on this platform.' not in result.stderr.str()
 
 
-@pytest.fixture(params=[True, False], ids=['skips', 'no-skips'])
-def skip_missing(request):
-    return request.param
-
-
-def test_skip_missing_interpreters(testdir_legacy, options, skip_missing):
+def test_skip_missing_interpreters(testdir_legacy, options):
     testdir_legacy.tmpdir.join('tox.ini').write("""
 [tox]
 envlist =
     py-{{a,b}}
     missing_interpreter
 
-skip_missing_interpreters = {}
+skip_missing_interpreters = True
 
 [testenv]
 wheel = true
