@@ -2,6 +2,13 @@ import pytest
 
 import tox_wheel.plugin
 
+try:
+    from unittest.mock import MagicMock
+    from unittest.mock import patch
+except ImportError:
+    from mock import MagicMock
+    from mock import patch
+
 pytest_plugins = 'pytester',
 
 
@@ -188,25 +195,24 @@ wheel = true
     assert 'is not a supported wheel on this platform.' not in result.stderr.str()
 
 
-def test_skip_missing_interpreters(testdir_legacy, options):
-    testdir_legacy.tmpdir.join('tox.ini').write("""
-[tox]
-envlist =
-    py-{a,b}
-    missing_interpreter
+def test_skip_missing_interpreters():
+    with patch.object(tox_wheel.plugin, 'get_package') as mock_build:
+        venv = MagicMock()
+        venv.envconfig.wheel = True
+        session = MagicMock()
+        session.config.option.wheel = True
+        session.getvenv.return_value = object()
+        mock_build.side_effect = tox_wheel.plugin.InterpreterNotFound("No interpreter")
 
-skip_missing_interpreters = True
+        with pytest.raises(tox_wheel.plugin.InterpreterNotFound):
+            tox_wheel.plugin.get_package(session)
 
-[testenv]
-wheel = true
+        session.config.option.skip_missing_interpreters = True
+        assert tox_wheel.plugin.tox_package(session, venv) is None
 
-[testenv:missing_interpreter]
-basepython = python3.nothing
-""")
-    options[options.index('-e') + 1] = 'py-a,py-b,missing_interpreter'
-
-    result = testdir_legacy.run('tox', '-vv', *options)
-    assert result.ret == 0, result.stdout
+        session.config.option.skip_missing_interpreters = False
+        with pytest.raises(tox_wheel.plugin.InterpreterNotFound):
+            tox_wheel.plugin.tox_package(session, venv)
 
 
 def test_multiplex_sdist_and_wheel(testdir_legacy, options):
