@@ -143,6 +143,7 @@ def wheel_build_pep517(config, session, venv):
     with session.newaction(venv.name, "packaging") as action:
         venv.update(action=action)
         ensure_empty_dir(config.distdir)
+        ensure_empty_dir(config.setupdir.join("build"))
         venv.test(
             name="wheel-make",
             commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", config.distdir]],
