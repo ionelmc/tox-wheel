@@ -142,8 +142,10 @@ def wheel_build_pep517(config, session, venv):
         raise SystemExit(1)
     with session.newaction(venv.name, "packaging") as action:
         venv.update(action=action)
+        if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
+            action.setactivity("wheel-make", "cleaning up build directory ...")
+            ensure_empty_dir(config.setupdir.join("build"))
         ensure_empty_dir(config.distdir)
-        ensure_empty_dir(config.setupdir.join("build"))
         venv.test(
             name="wheel-make",
             commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", config.distdir]],
