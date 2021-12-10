@@ -142,13 +142,26 @@ wheel_build_env = build
     assert result.ret == 0
 
 
-def test_enabled_toxini_noclean(testdir_legacy, options):
+def test_enabled_toxini_noclean_legacy(testdir_legacy, options):
     testdir_legacy.tmpdir.join('tox.ini').write("""
 [testenv]
 wheel = true
 wheel_dirty = true
 """, mode='a')
     result = testdir_legacy.run('tox', *options)
+    result.stdout.fnmatch_lines([
+        'py* wheel-make: *',
+    ])
+    assert 'cleaning up build directory ...' not in result.stdout.str()
+    assert 'cleaning up build directory ...' not in result.stderr.str()
+    assert result.ret == 0
+
+
+def test_enabled_toxini_noclean_pep517(testdir_pep517, options):
+    testdir_pep517.tmpdir.join('tox.ini').write("""
+wheel_dirty = true
+""", mode='a')
+    result = testdir_pep517.run('tox', *options)
     result.stdout.fnmatch_lines([
         'py* wheel-make: *',
     ])
