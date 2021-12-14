@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 import tox_wheel.plugin
@@ -83,7 +85,11 @@ def test_enabled_pep517(testdir_pep517, options):
     result.stdout.fnmatch_lines([
         'py* wheel-make: *',
     ])
-    assert result.stdout.str().count('Building wheel for foobar (PEP 517)') == 4
+    if sys.version_info >= (3, 6):
+        build_string = 'Building wheel for foobar (pyproject.toml)'
+    else:
+        build_string = 'Building wheel for foobar (PEP 517)'
+    assert result.stdout.str().count(build_string) == 4
     assert result.ret == 0
 
 
@@ -121,7 +127,11 @@ wheel_build_env = build
     result.stdout.fnmatch_lines([
         'build wheel-make: *',
     ])
-    assert result.stdout.str().count('Building wheel for foobar (PEP 517)') == 2
+    if sys.version_info >= (3, 6):
+        build_string = 'Building wheel for foobar (pyproject.toml)'
+    else:
+        build_string = 'Building wheel for foobar (PEP 517)'
+    assert result.stdout.str().count(build_string) == 2
     assert result.ret == 0
 
 
