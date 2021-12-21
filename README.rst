@@ -8,19 +8,15 @@ Overview
     :stub-columns: 1
 
     * - tests
-      - | |travis| |appveyor| |requires|
+      - | |github-actions| |requires|
         | |coveralls| |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
 
-.. |travis| image:: https://api.travis-ci.org/ionelmc/tox-wheel.svg?branch=master
-    :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/ionelmc/tox-wheel
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/ionelmc/tox-wheel?branch=master&svg=true
-    :alt: AppVeyor Build Status
-    :target: https://ci.appveyor.com/project/ionelmc/tox-wheel
+.. |github-actions| image:: https://github.com/ionelmc/tox-wheel/actions/workflows/github-actions.yml/badge.svg
+    :alt: GitHub Actions Build Status
+    :target: https://github.com/ionelmc/tox-wheel/actions
 
 .. |requires| image:: https://requires.io/github/ionelmc/tox-wheel/requirements.svg?branch=master
     :alt: Requirements Status
@@ -53,6 +49,8 @@ Overview
 .. |commits-since| image:: https://img.shields.io/github/commits-since/ionelmc/tox-wheel/v0.6.0.svg
     :alt: Commits since latest release
     :target: https://github.com/ionelmc/tox-wheel/compare/v0.6.0...master
+
+
 
 .. end-badges
 
