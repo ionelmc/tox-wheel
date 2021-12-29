@@ -2,6 +2,13 @@
 Changelog
 =========
 
+0.7.0 (2021-12-29)
+------------------
+
+* Fixed build dir not being cleaned up in PEP 517 mode.
+  Contributed by Michael Rans in `#16 <https://github.com/ionelmc/tox-wheel/pull/16>`_.
+* Switched CI from Travis/AppVeyor to GitHub Actions.
+
 0.6.0 (2020-11-06)
 ------------------
 
