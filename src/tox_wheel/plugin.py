@@ -34,7 +34,7 @@ def tox_addoption(parser):
     parser.add_testenv_attribute(
         name="wheel_pep517",
         type="bool",
-        default=False,
+        default=True,
         help="Build wheel using PEP 517/518"
     )
     parser.add_testenv_attribute(
