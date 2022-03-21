@@ -84,7 +84,7 @@ def tox_package(session, venv):
 
 
 def wheel_build_package(config, session, venv):
-    if config.isolated_build or venv.envconfig.wheel_pep517:
+    if config.isolated_build or session.config.option.wheel_dirty or venv.envconfig.wheel_pep517:
         wheel_package = wheel_build_pep517(config, session, venv)
     else:
         wheel_package = wheel_build_legacy(config, session, venv)
