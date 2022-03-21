@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from functools import partial
+import os
 
 import pluggy
 import py
@@ -155,14 +156,16 @@ def wheel_build_pep517(config, session, venv):
             ensure_empty_dir(config.distdir)
         venv.test(
             name="wheel-make",
-            commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", config.distdir]],
+            # commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", config.distdir]],
+            commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", 'dist']],
             redirect=False,
             ignore_outcome=False,
             ignore_errors=False,
             display_hash_seed=False,
         )
         try:
-            dists = config.distdir.listdir()
+            # dists = config.distdir.listdir()
+            dists = os.listdir('dist')
         except py.error.ENOENT:
             reporter.error(
                 "No dist directory found. Please check pyproject.toml, e.g with:\n"
