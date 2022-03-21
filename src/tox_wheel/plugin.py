@@ -20,7 +20,7 @@ def tox_addoption(parser):
         help="Build wheel instead of sdist",
     )
     parser.add_argument(
-        name="--wheel-pep517",
+        "--wheel-pep517",
         action="store_true",
         help="Build wheel using PEP 517/518"
     )
