@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from functools import partial
+import os
 
 import pluggy
 import py
@@ -33,7 +34,7 @@ def tox_addoption(parser):
     parser.add_testenv_attribute(
         name="wheel_pep517",
         type="bool",
-        default=False,
+        default=True,
         help="Build wheel using PEP 517/518"
     )
     parser.add_testenv_attribute(
@@ -156,6 +157,23 @@ def wheel_build_pep517(config, session, venv):
         venv.test(
             name="wheel-make",
             commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", config.distdir]],
+            # commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", '../dist']],
+            redirect=False,
+            ignore_outcome=False,
+            ignore_errors=False,
+            display_hash_seed=False,
+        )
+        venv.test(
+            name="spare-wheel",
+            commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", '~/dist']],
+            redirect=False,
+            ignore_outcome=False,
+            ignore_errors=False,
+            display_hash_seed=False,
+        )
+        venv.test(
+            name="wheel-cp",
+            commands=[["cp", config.distdir + '/*.whl', 'dist/']],
             redirect=False,
             ignore_outcome=False,
             ignore_errors=False,
@@ -163,6 +181,7 @@ def wheel_build_pep517(config, session, venv):
         )
         try:
             dists = config.distdir.listdir()
+            # dists = os.listdir('../dist')
         except py.error.ENOENT:
             reporter.error(
                 "No dist directory found. Please check pyproject.toml, e.g with:\n"
