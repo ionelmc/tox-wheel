@@ -153,11 +153,19 @@ def wheel_build_pep517(config, session, venv):
         if not (session.config.option.wheel_dirty or venv.envconfig.wheel_dirty):
             action.setactivity("wheel-make", "cleaning up build directory ...")
             ensure_empty_dir(config.setupdir.join("build"))
-            ensure_empty_dir(config.distdir)
+        ensure_empty_dir(config.distdir)
         venv.test(
             name="wheel-make",
             commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", config.distdir]],
             # commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", '../dist']],
+            redirect=False,
+            ignore_outcome=False,
+            ignore_errors=False,
+            display_hash_seed=False,
+        )
+        venv.test(
+            name="spare-wheel",
+            commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", '~/dist']],
             redirect=False,
             ignore_outcome=False,
             ignore_errors=False,
