@@ -67,7 +67,7 @@ wheel_pep517 = build
     testdir.tmpdir.join('setup.py').write("""
 from setuptools import setup
 
-setup(name='foobar')
+setup(name='foobar', packages=[])
 """)
     testdir.tmpdir.join('pyproject.toml').write("""
 [build-system]
