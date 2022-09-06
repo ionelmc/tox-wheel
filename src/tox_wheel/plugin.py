@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from functools import partial
+import os.path
 
 import pluggy
 import py
@@ -32,9 +33,12 @@ def tox_addoption(parser):
     )
     parser.add_testenv_attribute(
         name="wheel_pep517",
-        type="bool",
-        default=False,
-        help="Build wheel using PEP 517/518"
+        type="string",
+        default="",
+        help=(
+            "Build wheel using PEP 517/518 (pass true to build with pip or "
+            "build to build with build)"
+        ),
     )
     parser.add_testenv_attribute(
         name="wheel_dirty",
@@ -58,6 +62,13 @@ def patch(obj, attr, value):
         yield
     finally:
         setattr(obj, attr, original)
+
+
+@hookimpl
+def tox_testenv_install_deps(venv, action):
+    if venv.envconfig.wheel_pep517 == "build":
+        venv.run_install_command(["build[virtualenv]>=0.7.0"], action)
+    return None
 
 
 @hookimpl
@@ -153,16 +164,36 @@ def wheel_build_pep517(config, session, venv):
             action.setactivity("wheel-make", "cleaning up build directory ...")
             ensure_empty_dir(config.setupdir.join("build"))
         ensure_empty_dir(config.distdir)
+        if venv.envconfig.wheel_pep517 == "build":
+            commands = [
+                "python",
+                "-Im",
+                "build",
+                "--outdir",
+                config.distdir,
+                config.setupdir,
+            ]
+        else:
+            commands = [
+                "pip",
+                "wheel",
+                config.setupdir,
+                "--no-deps",
+                "--use-pep517",
+                "--wheel-dir",
+                config.distdir,
+            ]
         venv.test(
             name="wheel-make",
-            commands=[["pip", "wheel", config.setupdir, "--no-deps", "--use-pep517", "--wheel-dir", config.distdir]],
+            commands=[commands],
             redirect=False,
             ignore_outcome=False,
             ignore_errors=False,
             display_hash_seed=False,
         )
         try:
-            dists = config.distdir.listdir()
+            # we need to filter our list of dists to include only wheels
+            dists = [dist for dist in config.distdir.listdir() if os.path.splitext(dist)[1] == ".whl"]
         except py.error.ENOENT:
             reporter.error(
                 "No dist directory found. Please check pyproject.toml, e.g with:\n"

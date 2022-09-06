@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Unreleased changes
+------------------
+
+* Added option to build wheels (and sdists) in an isolated environment using `build <https://github.com/pypa/build>`_.
+  Contributed by Ben Rowland in `#17 <https://github.com/ionelmc/tox-wheel/pull/17>`_.
+
 0.7.0 (2021-12-29)
 ------------------
 

@@ -54,6 +54,32 @@ build-backend = "setuptools.build_meta"
     return testdir
 
 
+@pytest.fixture
+def testdir_pep517_build(testdir):
+    testdir.tmpdir.join('tox.ini').write("""
+[tox]
+envlist = py-{a,b}
+
+[testenv]
+wheel = true
+wheel_pep517 = build
+""")
+    testdir.tmpdir.join('setup.py').write("""
+from setuptools import setup
+
+setup(name='foobar', packages=[])
+""")
+    testdir.tmpdir.join('pyproject.toml').write("""
+[build-system]
+requires = [
+    "setuptools >= 35.0.2"
+]
+build-backend = "setuptools.build_meta"
+""")
+    testdir.tmpdir.join('build').ensure(dir=1)
+    return testdir
+
+
 @pytest.fixture(params=['', '--parallel 1 --parallel-live'], ids=['sequential', 'parallel'])
 def options(request):
     return ['-e', 'py-a,py-b'] + request.param.split()
@@ -99,6 +125,16 @@ def test_enabled_pep517(testdir_pep517, options):
     assert result.ret == 0
 
 
+def test_enabled_pep517_build(testdir_pep517_build, options):
+    result = testdir_pep517_build.run('tox', *options)
+    result.stdout.fnmatch_lines([
+        'py* wheel-make: *',
+    ])
+    build_string = 'Successfully built foobar-0.0.0.tar.gz and foobar-0.0.0-py3-none-any.whl'
+    assert result.stdout.str().count(build_string) == 2
+    assert result.ret == 0
+
+
 def test_build_env_legacy(testdir_legacy, options):
     testdir_legacy.tmpdir.join('setup.cfg').write("""
 [bdist_wheel]
@@ -138,6 +174,25 @@ wheel_build_env = build
     else:
         build_string = 'Building wheel for foobar (PEP 517)'
     assert result.stdout.str().count(build_string) == 2
+    assert result.ret == 0
+
+
+def test_build_env_pep517_build(testdir_pep517_build, options):
+    testdir_pep517_build.tmpdir.join('setup.cfg').write("""
+[bdist_wheel]
+universal = 1
+""")
+    testdir_pep517_build.tmpdir.join('tox.ini').write("""
+wheel_build_env = build
+
+[testenv:build]
+""", mode='a')
+    result = testdir_pep517_build.run('tox', *options)
+    result.stdout.fnmatch_lines([
+        'build wheel-make: *',
+    ])
+    build_string = 'Successfully built foobar-0.0.0.tar.gz and foobar-0.0.0-py2.py3-none-any.whl'
+    assert result.stdout.str().count(build_string) == 1
     assert result.ret == 0
 
 
