@@ -67,7 +67,7 @@ def patch(obj, attr, value):
 @hookimpl
 def tox_testenv_install_deps(venv, action):
     if venv.envconfig.wheel_pep517 == "build":
-        venv.run_install_command(["build[virtualenv]==0.7.0"], action)
+        venv.run_install_command(["build[virtualenv]>=0.7.0"], action)
     return None
 
 
