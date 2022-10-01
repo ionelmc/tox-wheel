@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Unreleased changes
+1.0.0 (2022-10-01)
 ------------------
 
 * Added option to build wheels (and sdists) in an isolated environment using `build <https://github.com/pypa/build>`_.
