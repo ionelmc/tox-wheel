@@ -1,6 +1,6 @@
+import os.path
 from contextlib import contextmanager
 from functools import partial
-import os.path
 
 import pluggy
 import py

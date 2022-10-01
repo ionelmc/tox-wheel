@@ -156,4 +156,3 @@ Development
 To run the all tests run::
 
     tox
-
